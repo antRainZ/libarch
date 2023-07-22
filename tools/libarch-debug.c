@@ -52,7 +52,7 @@ void instruction_debug (instruction_t *instr, int show_fields)
     printf ("Decode Group:      %d\n",          instr->group);
     printf ("Decode Subgroup:   %d\n",          instr->subgroup);
     printf ("Instruction Type:  %s (%d)\n",     A64_INSTRUCTIONS_STR[instr->type], instr->type);
-    printf ("Address:           0x%016x\n",     instr->addr);
+    printf ("Address:           0x%016lx\n",     instr->addr);
 
     printf ("Operands:          %d\n", instr->operands_len);
     for (int i = 0; i < instr->operands_len; i++) {
@@ -67,7 +67,7 @@ void instruction_debug (instruction_t *instr, int show_fields)
         } else if (op->op_type == ARM64_OPERAND_TYPE_IMMEDIATE) {
             printf ("IMMEDIATE (%d)\n", op->op_type);
             printf ("\t[%d]: imm_type:      %d\n", i, op->imm_type);
-            printf ("\t[%d]: imm_bits:      %d\n", i, op->imm_bits);
+            printf ("\t[%d]: imm_bits:      %ld\n", i, op->imm_bits);
         } else if (op->op_type == ARM64_OPERAND_TYPE_SHIFT) {
             printf ("SHIFT (%d)\n", op->op_type);
             printf ("\t[%d]: shift_type:    %d\n", i, op->shift_type);
@@ -104,7 +104,7 @@ void instruction_debug (instruction_t *instr, int show_fields)
 void create_string (instruction_t *instr)
 {
     /* Handle Mnemonic */
-    char *mnemonic = A64_INSTRUCTIONS_STR[instr->type];
+    const char *mnemonic = A64_INSTRUCTIONS_STR[instr->type];
     if (instr->cond != -1) printf ("%s.%s\t", mnemonic, A64_CONDITIONS_STR[instr->cond]);
     else if (instr->spec != -1) printf ("%s.%s\t", mnemonic, A64_VEC_SPECIFIER_STR[instr->spec]);
     else printf ("%s\t", mnemonic);
@@ -116,7 +116,7 @@ void create_string (instruction_t *instr)
 
         /* Register */
         if (op->op_type == ARM64_OPERAND_TYPE_REGISTER) {
-            char *reg;
+            const char *reg;
 
             const char **regs;
             size_t size;
@@ -152,19 +152,19 @@ void create_string (instruction_t *instr)
             if (op->prefix) printf ("%c", op->prefix);
 
             if (op->imm_type == ARM64_IMMEDIATE_TYPE_SYSC)
-                printf ("c%d", op->imm_bits);
+                printf ("c%ld", op->imm_bits);
             else if (op->imm_type == ARM64_IMMEDIATE_TYPE_SYSS)
-                printf ("s%d", op->imm_bits);
+                printf ("s%ld", op->imm_bits);
             else if (instr->type == ARM64_INSTRUCTION_SYS || instr->type == ARM64_INSTRUCTION_SYSL)
-                printf ("%d", op->imm_bits);
+                printf ("%ld", op->imm_bits);
             else {
                 if (op->imm_opts == ARM64_IMMEDIATE_OPERAND_OPT_PREFER_DECIMAL) {
-                    printf ("%d", op->imm_bits);
+                    printf ("%ld", op->imm_bits);
                 } else {
                     if (op->imm_type == ARM64_IMMEDIATE_TYPE_LONG || op->imm_type == ARM64_IMMEDIATE_TYPE_ULONG)
-                        printf ("0x%llx", op->imm_bits);
+                        printf ("0x%lx", op->imm_bits);
                     else
-                        printf ("0x%x", op->imm_bits);
+                        printf ("0x%lx", op->imm_bits);
                 }
             }
 
@@ -240,7 +240,7 @@ check_comma:
 void disassemble (uint32_t *data, uint32_t len, uint64_t base, int dbg)
 {
     for (int i = 0; i < len; i++) {
-        //if (data[i] == NULL) continue;
+        if (data[i] == NULL) continue;
         instruction_t *in = libarch_instruction_create (data[i], base);
 
         libarch_disass (&in);
@@ -253,6 +253,7 @@ void disassemble (uint32_t *data, uint32_t len, uint64_t base, int dbg)
         }
 
         base += 4;
+        free(in);
     }
 }
 
@@ -266,13 +267,13 @@ int main (int argc, char *argv[])
     if (argc == 3) {
         printf (BLUE "\n    LIBARCH Version %s: %s; root:%s/%s_%s %s\n\n" RESET,
             LIBARCH_BUILD_VERSION, __TIMESTAMP__, LIBARCH_SOURCE_VERSION, LIBARCH_BUILD_TYPE, BUILD_ARCH_CAP, BUILD_ARCH);
-
+        // 交换字节顺序
         uint32_t input = SWAP_INT(strtol(argv[1], NULL, 16));
-        uint32_t *opcode[] = { input, NULL };
+        uint32_t opcode[] = { input, 0 };
         disassemble (opcode, 1, 0, atoi(argv[2]));
     } else {
         uint32_t input = SWAP_INT(strtol(argv[1], NULL, 16));
-        uint32_t *opcode[] = { input, NULL };
+        uint32_t opcode[] = { input, 0 };
         disassemble (opcode, 1, 0, 0);
     }
     return 0;

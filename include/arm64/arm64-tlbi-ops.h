@@ -17,6 +17,7 @@
 #define __LIBARCH_ARM64_TLBI_OPS_H__
 
 #include <stdlib.h>
+#include <stdint.h>
 #include "libarch.h"
 
 LIBARCH_API int

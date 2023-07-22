@@ -172,8 +172,8 @@ decode_advanced_simd_load_store_multiple_structures (instruction_t **instr)
         libarch_instruction_add_operand_register_with_fix (instr, Rt, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, '{', '}');
     } else {
         for (int i = Rt; i < Rt + reg_count; i++) {
-            if (i == Rt) libarch_instruction_add_operand_register_with_fix (instr, i, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, '{', NULL);
-            else if (i == Rt + reg_count - 1) libarch_instruction_add_operand_register_with_fix (instr, i, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, NULL, '}');
+            if (i == Rt) libarch_instruction_add_operand_register_with_fix (instr, i, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, '{', 0);
+            else if (i == Rt + reg_count - 1) libarch_instruction_add_operand_register_with_fix (instr, i, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, 0, '}');
             else libarch_instruction_add_operand_register (instr, i, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, ARM64_REGISTER_OPERAND_OPT_NONE);
         }
     }
@@ -274,8 +274,8 @@ decode_advanced_simd_load_store_single_structure (instruction_t **instr)
         libarch_instruction_add_operand_register_with_fix (instr, Rt, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, '{', '}');
     } else {
         for (int i = 0; i < reg_count; i++) {
-            if (i == 0) libarch_instruction_add_operand_register_with_fix (instr, i, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, '{', NULL);
-            else if (i == reg_count - 1) libarch_instruction_add_operand_register_with_fix (instr, i, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, NULL, '}');
+            if (i == 0) libarch_instruction_add_operand_register_with_fix (instr, i, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, '{', 0);
+            else if (i == reg_count - 1) libarch_instruction_add_operand_register_with_fix (instr, i, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, 0, '}');
             else libarch_instruction_add_operand_register (instr, i, 128, ARM64_REGISTER_TYPE_FLOATING_POINT, ARM64_REGISTER_OPERAND_OPT_NONE);
         }
     }
@@ -680,10 +680,10 @@ decode_load_store_register_pair (instruction_t **instr)
 
             /* Load/Store no-allocated pair (offset) */
             if (opcode_table[i].select == 0 || opcode_table[i].select == 2) {
-                libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', (imm7 >= 1) ? NULL : ']');
+                libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', (imm7 >= 1) ? 0 : ']');
 
                 if (imm7)
-                    libarch_instruction_add_operand_immediate_with_fix (instr, *(int *) &imm, ARM64_IMMEDIATE_TYPE_INT, NULL, ']');
+                    libarch_instruction_add_operand_immediate_with_fix (instr, *(int *) &imm, ARM64_IMMEDIATE_TYPE_INT, 0, ']');
 
             /* Load/Store register pair (post-indexed) */
             } else if (opcode_table[i].select == 1) {
@@ -692,8 +692,8 @@ decode_load_store_register_pair (instruction_t **instr)
             
             /* Load/Store register pair (pre-indexed) */
             } else if (opcode_table[i].select == 3) {
-                libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', NULL);
-                libarch_instruction_add_operand_immediate_with_fix_extra (instr, *(int *) &imm, ARM64_IMMEDIATE_TYPE_INT, NULL, ']');
+                libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', 0);
+                libarch_instruction_add_operand_immediate_with_fix_extra (instr, *(int *) &imm, ARM64_IMMEDIATE_TYPE_INT, 0, ']');
             }
 
             break;
@@ -908,8 +908,8 @@ decode_load_store_register (instruction_t **instr, int uimm_opt)
             unsigned imm12 = select_bits ((*instr)->opcode, 10, 21);
             unsigned int pimm = arm64_sign_extend(imm12, 12) * (opcode_table[i].width / 8);
 
-            libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', NULL);
-            libarch_instruction_add_operand_immediate_with_fix (instr, *(unsigned int *) &pimm, ARM64_IMMEDIATE_TYPE_INT, NULL, ']');
+            libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', 0);
+            libarch_instruction_add_operand_immediate_with_fix (instr, *(unsigned int *) &pimm, ARM64_IMMEDIATE_TYPE_INT, 0, ']');
 
         } else if (opcode_table[i].op2 == op2 && opcode_table[i].op3 == op3 && opcode_table[i].op4 == op4) {
             if (opcode_table[i].size == size && opcode_table[i].V == V && opcode_table[i].opc == opc) {
@@ -939,18 +939,18 @@ decode_load_store_register (instruction_t **instr, int uimm_opt)
                 if (op2 == 0 && op3 == 0 && (op4 == 0 || op4 == 1)) {
                     unsigned int imm = arm64_sign_extend (imm9, 9);
 
-                    libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', (imm >= 1 && op4 == 0) ? NULL : ']');
-                    libarch_instruction_add_operand_immediate_with_fix (instr, *(int *) &imm, ARM64_IMMEDIATE_TYPE_INT, NULL, (op4 == 0) ? ']' : NULL);
+                    libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', (imm >= 1 && op4 == 0) ? 0 : ']');
+                    libarch_instruction_add_operand_immediate_with_fix (instr, *(int *) &imm, ARM64_IMMEDIATE_TYPE_INT, 0, (op4 == 0) ? ']' : 0);
 
                 /* unprivileged, immediate pre-indexed */
                 } else if (op2 == 0 && op3 == 0 && (op4 == 2 || op4 == 3)) {
                     unsigned int imm = arm64_sign_extend (imm9, 9);
-                    libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', NULL);
+                    libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', 0);
 
                     if (op4 == 3) 
-                        libarch_instruction_add_operand_immediate_with_fix_extra (instr, *(int *) &imm, ARM64_IMMEDIATE_TYPE_INT, NULL, ']');
+                        libarch_instruction_add_operand_immediate_with_fix_extra (instr, *(int *) &imm, ARM64_IMMEDIATE_TYPE_INT, 0, ']');
                     else
-                        libarch_instruction_add_operand_immediate_with_fix (instr, *(int *) &imm, ARM64_IMMEDIATE_TYPE_INT, NULL, ']');
+                        libarch_instruction_add_operand_immediate_with_fix (instr, *(int *) &imm, ARM64_IMMEDIATE_TYPE_INT, 0, ']');
                 
                 /* Unsigned immediate */
                 } else if (op2 == 1) {
@@ -1045,11 +1045,11 @@ decode_load_store_register_reg_offset (instruction_t **instr)
             }
 
             libarch_instruction_add_operand_register (instr, Rt, opcode_table[i].width, opcode_table[i].simd_fp, ARM64_REGISTER_OPERAND_OPT_PREFER_ZERO);
-            libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', NULL);
+            libarch_instruction_add_operand_register_with_fix (instr, Rn, 64, ARM64_REGISTER_TYPE_GENERAL, '[', 0);
             libarch_instruction_add_operand_register (instr, Rm, (use_extend) ? 32 : 64, ARM64_REGISTER_TYPE_GENERAL, ARM64_REGISTER_OPERAND_OPT_PREFER_ZERO);
 
             if (use_extend) {
-                libarch_instruction_add_operand_extra_with_fix (instr, ARM64_OPERAND_TYPE_INDEX_EXTEND, option, NULL, ']');
+                libarch_instruction_add_operand_extra_with_fix (instr, ARM64_OPERAND_TYPE_INDEX_EXTEND, option, 0, ']');
             } else {
                 int shift_table[] = {0, 1, 2, 3, 4};
                 int shift = 0;
@@ -1060,7 +1060,7 @@ decode_load_store_register_reg_offset (instruction_t **instr)
                 if (opcode_table[i].width >= 16 && opcode_table[i].width <= 128 && opcode_table[i].simd_fp == ARM64_REGISTER_TYPE_FLOATING_POINT)
                     shift = shift_table[(opcode_table[i].width / 16) - 1];
 
-                libarch_instruction_add_operand_shift_with_fix (instr, shift, ARM64_SHIFT_TYPE_LSL, NULL, ']');
+                libarch_instruction_add_operand_shift_with_fix (instr, shift, ARM64_SHIFT_TYPE_LSL, 0, ']');
             }
 
             break;

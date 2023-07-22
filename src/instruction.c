@@ -29,19 +29,26 @@
  *  \return Result code.
 */
 LIBARCH_PRIVATE LIBARCH_API
-libarch_return_t
-_libarch_instruction_realloc_operand (instruction_t **instr)
-{
+libarch_return_t 
+_libarch_instruction_realloc_operand(instruction_t **instr) {
     /* Alloc / Realloc the operands array */
+    operand_t *new_operands = NULL;
+
     if ((*instr)->operands_len == 0) {
-        (*instr)->operands = malloc (sizeof (operand_t) * ++(*instr)->operands_len);
+        new_operands = malloc(sizeof(operand_t));
     } else {
-        operand_t *new = (*instr)->operands = realloc ((*instr)->operands, sizeof (operand_t) * ++(*instr)->operands_len);
-        (*instr)->operands = new;
+        new_operands = realloc((*instr)->operands, sizeof(operand_t) * ((*instr)->operands_len + 1));
     }
 
-    assert ((*instr)->operands_len);
-    return ((*instr)->operands_len) ? LIBARCH_RETURN_SUCCESS : LIBARCH_RETURN_FAILURE;
+    if (new_operands == NULL) {
+        return LIBARCH_RETURN_FAILURE;
+    }
+
+    (*instr)->operands = new_operands;
+    (*instr)->operands_len++;
+
+    assert((*instr)->operands_len != 0);
+    return LIBARCH_RETURN_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,9 +82,9 @@ libarch_instruction_add_operand_immediate (instruction_t **instr, uint64_t bits,
     (*instr)->operands[(*instr)->operands_len - 1].imm_opts = opts;
 
     /* Nullify unused prefix, suffix and suffix_extra when not used */
-    (*instr)->operands[(*instr)->operands_len - 1].prefix = NULL;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix = NULL;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = NULL;
+    (*instr)->operands[(*instr)->operands_len - 1].prefix = 0;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix = 0;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = 0;
 
     return LIBARCH_RETURN_SUCCESS;
 }
@@ -117,7 +124,7 @@ libarch_instruction_add_operand_immediate_with_fix (instruction_t **instr, uint6
     /* Immediate prefix/suffix, e.g. [12] has a prefix '[' and suffix ']' */
     (*instr)->operands[(*instr)->operands_len - 1].prefix = prefix;
     (*instr)->operands[(*instr)->operands_len - 1].suffix = suffix;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = NULL;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = 0;
 
     return LIBARCH_RETURN_SUCCESS;
 }
@@ -135,9 +142,9 @@ libarch_instruction_add_operand_shift (instruction_t **instr, uint32_t shift, ui
     (*instr)->operands[(*instr)->operands_len - 1].shift_type = type;
 
     /* Nullify unused prefix, suffix and suffix_extra when not used */
-    (*instr)->operands[(*instr)->operands_len - 1].prefix = NULL;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix = NULL;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = NULL;
+    (*instr)->operands[(*instr)->operands_len - 1].prefix = 0;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix = 0;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = 0;
 
     return LIBARCH_RETURN_SUCCESS;
 }
@@ -157,7 +164,7 @@ libarch_instruction_add_operand_shift_with_fix (instruction_t **instr, uint32_t 
     /* Shift prefix/suffix, e.g. [lsl #2] has a prefix '[' and suffix ']' */
     (*instr)->operands[(*instr)->operands_len - 1].prefix = prefix;
     (*instr)->operands[(*instr)->operands_len - 1].suffix = suffix;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = NULL;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = 0;
 
     return LIBARCH_RETURN_SUCCESS;
 }
@@ -182,9 +189,9 @@ libarch_instruction_add_operand_register (instruction_t **instr, arm64_reg_t a64
     (*instr)->operands[(*instr)->operands_len - 1].reg_size = size;
     (*instr)->operands[(*instr)->operands_len - 1].reg_type = type;
 
-    (*instr)->operands[(*instr)->operands_len - 1].prefix = NULL;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix = NULL;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = NULL;
+    (*instr)->operands[(*instr)->operands_len - 1].prefix = 0;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix = 0;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = 0;
 
     return LIBARCH_RETURN_SUCCESS;
 }
@@ -208,7 +215,7 @@ libarch_instruction_add_operand_register_with_fix (instruction_t **instr, arm64_
     /* Register prefix/suffix, e.g. [x12] has a prefix '[' and suffix ']' */
     (*instr)->operands[(*instr)->operands_len - 1].prefix = prefix;
     (*instr)->operands[(*instr)->operands_len - 1].suffix = suffix;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = NULL;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = 0;
 
     return LIBARCH_RETURN_SUCCESS;
 }
@@ -225,9 +232,9 @@ libarch_instruction_add_operand_target (instruction_t **instr, char *target)
     (*instr)->operands[(*instr)->operands_len - 1].target = strdup (target);
 
     /* Nullify unused prefix, suffix and suffix_extra when not used */
-    (*instr)->operands[(*instr)->operands_len - 1].prefix = NULL;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix = NULL;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = NULL;
+    (*instr)->operands[(*instr)->operands_len - 1].prefix = 0;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix = 0;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = 0;
 
     return LIBARCH_RETURN_SUCCESS;
 }
@@ -244,9 +251,9 @@ libarch_instruction_add_operand_extra (instruction_t **instr, int type, int val)
     (*instr)->operands[(*instr)->operands_len - 1].extra = val;
 
     /* Nullify unused prefix, suffix and suffix_extra when not used */
-    (*instr)->operands[(*instr)->operands_len - 1].prefix = NULL;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix = NULL;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = NULL;
+    (*instr)->operands[(*instr)->operands_len - 1].prefix = 0;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix = 0;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = 0;
 
     return LIBARCH_RETURN_SUCCESS;
 }
@@ -265,7 +272,7 @@ libarch_instruction_add_operand_extra_with_fix (instruction_t **instr, int type,
     /* Extra prefix/suffix, e.g. [x12] has a prefix '[' and suffix ']' */
     (*instr)->operands[(*instr)->operands_len - 1].prefix = prefix;
     (*instr)->operands[(*instr)->operands_len - 1].suffix = suffix;
-    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = NULL;
+    (*instr)->operands[(*instr)->operands_len - 1].suffix_extra = 0;
     
 
     return LIBARCH_RETURN_SUCCESS;
@@ -274,18 +281,23 @@ libarch_instruction_add_operand_extra_with_fix (instruction_t **instr, int type,
 
 LIBARCH_API
 libarch_return_t
-libarch_instruction_add_field (instruction_t **instr, int field)
-{
+libarch_instruction_add_field(instruction_t **instr, int field) {
     /* Alloc/Realloc fields array */
+    uint64_t *new_fields = NULL;
+    
     if ((*instr)->fields_len == 0) {
-        (*instr)->fields = malloc (sizeof (int) * ++(*instr)->fields_len);
+        new_fields = malloc(sizeof(uint64_t));
     } else {
-        int *new = (*instr)->fields = realloc ((*instr)->fields, sizeof (int) * ++(*instr)->fields_len);
-        (*instr)->fields = new;
+        new_fields = realloc((*instr)->fields, sizeof(uint64_t) * ((*instr)->fields_len + 1));
     }
-
-    /* Add the new field */
-    (*instr)->fields[(*instr)->fields_len - 1] = field;
+    
+    if (new_fields == NULL) {
+        return LIBARCH_RETURN_FAILURE;
+    }
+    
+    (*instr)->fields = new_fields;
+    (*instr)->fields[(*instr)->fields_len] = field;
+    (*instr)->fields_len++;
 
     return LIBARCH_RETURN_SUCCESS;
 }

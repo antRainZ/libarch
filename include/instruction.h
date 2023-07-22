@@ -43,7 +43,7 @@
 #define ARM64_SHIFT_TYPE_LSR                    5
 #define ARM64_SHIFT_TYPE_ASR                    6
 #define ARM64_SHIFT_TYPE_ROR                    7
-#define ARM64_SHIFT_TYPE_ROR                    8
+// #define ARM64_SHIFT_TYPE_ROR                    8
 #define ARM64_SHIFT_TYPE_MSL                    9
 
 /* Immediate type flags */
